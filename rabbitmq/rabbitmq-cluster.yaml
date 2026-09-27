@@ -1,0 +1,17 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: hello-rabbit
+  namespace: hello
+spec:
+  replicas: 3
+  persistence:
+    storageClassName: gp3
+    storage: 5Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 1Gi
