@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: socket-hello-server
+  namespace: hello
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+    nginx.ingress.kubernetes.io/session-cookie-name: "hello_srv"
+    nginx.ingress.kubernetes.io/session-cookie-samesite: "Lax"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hello.example.com   # replace with your domain, or test via the ELB hostname directly
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: socket-hello-server, port: { number: 80 } } }

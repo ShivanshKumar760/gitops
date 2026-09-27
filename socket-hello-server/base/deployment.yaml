@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: socket-hello-server
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  selector: { matchLabels: { app: socket-hello-server } }
+  template:
+    metadata: { labels: { app: socket-hello-server } }
+    spec:
+      containers:
+        - name: server
+          image: socket-hello-server:placeholder
+          ports: [{ containerPort: 3000 }]
+          # ---- ADDED RESOURCES BLOCK HERE ----
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          # ------------------------------------
+          env:
+            - name: POD_NAME
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - name: RABBIT_USER
+              valueFrom: { secretKeyRef: { name: hello-rabbit-default-user, key: username } }
+            - name: RABBIT_PASS
+              valueFrom: { secretKeyRef: { name: hello-rabbit-default-user, key: password } }
+            - name: RABBITMQ_URL
+              value: "amqp://$(RABBIT_USER):$(RABBIT_PASS)@hello-rabbit.hello.svc.cluster.local:5672"
+          readinessProbe:
+            httpGet: { path: /healthz, port: 3000 }
