@@ -1,7 +1,8 @@
+# apps/common.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: socket-hello-server
+  name: common
   namespace: argocd
 spec:
   project: default
