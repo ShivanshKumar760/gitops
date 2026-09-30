@@ -5,4 +5,4 @@ resources:
 images:
 - name: socket-hello-server
   newName: 114614701236.dkr.ecr.ap-south-1.amazonaws.com/socket-hello-server
-  newTag: sha-0d11d30
+  newTag: sha-ba3a98b
