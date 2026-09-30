@@ -22,7 +22,7 @@ spec:
             - name: PG_DB
               valueFrom: { secretKeyRef: { name: postgres-credentials, key: POSTGRES_DB } }
             - name: DATABASE_URL
-              value: "postgresql://$(PG_USER):$(PG_PASSWORD)@postgres.code-exec.svc.cluster.local:5432/$(PG_DB)"
+              value: "postgresql+psycopg2://$(PG_USER):$(PG_PASSWORD)@postgres.code-exec.svc.cluster.local:5432/$(PG_DB)"
             - name: JWT_SECRET_KEY
               valueFrom: { secretKeyRef: { name: code-executor-secrets, key: JWT_SECRET_KEY } }
             - name: POD_NAMESPACE
