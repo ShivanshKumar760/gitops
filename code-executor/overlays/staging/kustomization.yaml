@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: code-executor-api
+    newName: 114614701236.dkr.ecr.ap-south-1.amazonaws.com/code-executor-api
+    newTag: sha-INITIAL
+secretGenerator:
+  - name: code-executor-secrets
+    literals:
+      - JWT_SECRET_KEY=change-this-to-a-real-secret
+    options:
+      disableNameSuffixHash: true

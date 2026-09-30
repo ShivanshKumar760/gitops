@@ -1,3 +1,26 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: socket-hello-server
+#   namespace: hello
+#   annotations:
+#     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+#     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+#     nginx.ingress.kubernetes.io/affinity: "cookie"
+#     nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+#     nginx.ingress.kubernetes.io/session-cookie-name: "hello_srv"
+#     nginx.ingress.kubernetes.io/session-cookie-samesite: "Lax"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - http:   # deliberately no "host:" key — see the callout below for why
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend: { service: { name: socket-hello-server, port: { number: 80 } } }
+
+
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -13,8 +36,30 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - http:   # deliberately no "host:" key — see the callout below for why
+    - http:   # no host: matches any hostname (raw ELB URL keeps working)
         paths:
           - path: /
             pathType: Prefix
             backend: { service: { name: socket-hello-server, port: { number: 80 } } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: code-executor-api
+  namespace: code-exec
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [code.multicluster.uk]
+      secretName: code-executor-tls
+  rules:
+    - host: code.multicluster.uk
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: code-executor-api, port: { number: 80 } } }

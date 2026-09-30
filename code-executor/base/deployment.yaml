@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-executor-api
+  namespace: code-exec
+spec:
+  replicas: 1   # keep to 1 — this app writes to a ReadWriteOnce volume; see Section 26
+  selector: { matchLabels: { app: code-executor-api } }
+  template:
+    metadata: { labels: { app: code-executor-api } }
+    spec:
+      serviceAccountName: code-executor-api   # Section 24's RBAC — without this, load_incluster_config() has no permissions
+      containers:
+        - name: api
+          image: code-executor-api:placeholder   # kustomize overwrites this — see overlays/staging below
+          ports: [{ containerPort: 5000 }]
+          env:
+            - name: PG_USER
+              valueFrom: { secretKeyRef: { name: postgres-credentials, key: POSTGRES_USER } }
+            - name: PG_PASSWORD
+              valueFrom: { secretKeyRef: { name: postgres-credentials, key: POSTGRES_PASSWORD } }
+            - name: PG_DB
+              valueFrom: { secretKeyRef: { name: postgres-credentials, key: POSTGRES_DB } }
+            - name: DATABASE_URL
+              value: "postgresql://$(PG_USER):$(PG_PASSWORD)@postgres.code-exec.svc.cluster.local:5432/$(PG_DB)"
+            - name: JWT_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: code-executor-secrets, key: JWT_SECRET_KEY } }
+            - name: POD_NAMESPACE
+              valueFrom: { fieldRef: { fieldPath: metadata.namespace } }
+          volumeMounts:
+            - name: code
+              mountPath: /code   # FULL mount, no subPath — this pod needs to see every user's folder to create new ones
+          readinessProbe:
+            httpGet: { path: /healthz, port: 5000 }
+      volumes:
+        - name: code
+          persistentVolumeClaim: { claimName: user-code }

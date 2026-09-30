@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: code-executor   # ⚠️ must be unique across every file in apps/ — see Section 17's warning
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ShivanshKumar760/gitops.git
+    targetRevision: main
+    path: code-executor/overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: code-exec
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions:
+      - CreateNamespace=true
