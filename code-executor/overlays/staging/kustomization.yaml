@@ -5,7 +5,7 @@ resources:
 images:
 - name: code-executor-api
   newName: 114614701236.dkr.ecr.ap-south-1.amazonaws.com/code-executor-api
-  newTag: sha-0641817
+  newTag: sha-928eed7
 secretGenerator:
 - literals:
   - JWT_SECRET_KEY=change-this-to-a-real-secret
