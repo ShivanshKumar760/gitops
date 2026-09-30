@@ -13,8 +13,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: hello.example.com   # replace with your domain, or test via the ELB hostname directly
-      http:
+    - http:   # deliberately no "host:" key — see the callout below for why
         paths:
           - path: /
             pathType: Prefix
