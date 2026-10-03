@@ -1,0 +1,19 @@
+# apps/chat-video.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chat-video
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ShivanshKumar760/gitops.git
+    targetRevision: main
+    path: chat-video/overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: chat
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions:
+      - CreateNamespace=true
