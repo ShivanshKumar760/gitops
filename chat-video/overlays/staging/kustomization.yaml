@@ -6,4 +6,4 @@ resources:
 images:
 - name: chat-video
   newName: 114614701236.dkr.ecr.ap-south-1.amazonaws.com/chat-video
-  newTag: sha-2d928d4
+  newTag: sha-6045457
