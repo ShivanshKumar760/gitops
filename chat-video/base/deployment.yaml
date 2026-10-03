@@ -1,0 +1,41 @@
+# chat-video/base/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-video
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  selector: { matchLabels: { app: chat-video } }
+  template:
+    metadata: { labels: { app: chat-video } }
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: server
+          image: chat-video:placeholder   # kustomize overwrites this (overlays/staging)
+          ports: [{ containerPort: 3000 }]
+          env:
+            - name: POD_NAME
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - name: MONGODB_URI
+              value: "mongodb://mongodb-0.mongodb.chat.svc.cluster.local:27017/chat?replicaSet=rs0"
+            # Created by hand, never committed (see steps). optional: if absent,
+            # the app falls back to STUN only instead of failing to start.
+            - name: CLOUDFLARE_TURN_KEY_ID
+              valueFrom: { secretKeyRef: { name: cloudflare-turn, key: CLOUDFLARE_TURN_KEY_ID, optional: true } }
+            - name: CLOUDFLARE_TURN_API_TOKEN
+              valueFrom: { secretKeyRef: { name: cloudflare-turn, key: CLOUDFLARE_TURN_API_TOKEN, optional: true } }
+          resources:
+            requests: { cpu: 50m, memory: 96Mi }
+            limits:   { cpu: 500m, memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 3000 }
+            periodSeconds: 5
+          # Liveness deliberately does NOT depend on MongoDB, so a database
+          # blip makes pods unready, not restarted.
+          livenessProbe:
+            tcpSocket: { port: 3000 }
+            initialDelaySeconds: 10
+            periodSeconds: 20

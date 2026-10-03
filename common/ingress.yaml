@@ -63,3 +63,30 @@ spec:
           - path: /
             pathType: Prefix
             backend: { service: { name: code-executor-api, port: { number: 80 } } }
+---
+# common/ingress.yaml
+# getUserMedia (camera/mic) only works over HTTPS, so TLS is not optional here.
+# Replace chat.multicluster.uk with a hostname on a domain you own, CNAMEd to the ingress ELB hostname.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chat-video
+  namespace: chat
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx closes idle connections after 60s by default; WebSockets need longer.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # No sticky-session annotations on purpose: any pod can serve any socket.
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [chat.multicluster.uk]
+      secretName: chat-video-tls
+  rules:
+    - host: chat.multicluster.uk
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: chat-video, port: { number: 80 } } }

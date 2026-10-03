@@ -1,0 +1,9 @@
+# chat-video/overlays/staging/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: chat-video
+    newName: 114614701236.dkr.ecr.ap-south-1.amazonaws.com/chat-video   # your real Account ID
+    newTag: sha-INITIAL   # CI overwrites this every push

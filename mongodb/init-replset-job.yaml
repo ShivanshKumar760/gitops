@@ -1,0 +1,28 @@
+# mongodb/init-replset-job.yaml
+# Runs once after every sync (Argo CD PostSync hook). Safe to repeat:
+# it only initiates the replica set if it isn't initiated yet.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-init-replset
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: mongo:7.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mongosh --host mongodb-0.mongodb.chat.svc.cluster.local --quiet --eval "
+                try { rs.status(); print('replica set already initiated'); }
+                catch (e) {
+                  rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongodb-0.mongodb.chat.svc.cluster.local:27017' }] });
+                  print('replica set initiated');
+                }
+              "
